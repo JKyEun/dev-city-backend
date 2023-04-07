@@ -1,0 +1,22 @@
+# Node.js dependencies
+/node_modules
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Compiled binary addons (if any)
+/build/Release
+
+# IDE or editor-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Other runtime files and directories
+/public/uploads
+/tmp
