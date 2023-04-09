@@ -22,6 +22,7 @@ const postStudyInfo = async (req, res) => {
   try {
     await client.connect();
     const studyDB = client.db('dev-city').collection('study');
+    console.log(req.body);
 
     const newStudy = {
       studyName: req.body.study_name,
@@ -35,10 +36,11 @@ const postStudyInfo = async (req, res) => {
       createDate: date,
     };
     await studyDB.insertOne(newStudy);
+    res.status(200).json('스터디 생성 성공');
   } catch (err) {
     console.error(err);
     res.status(500).send('Error retrieving study');
   }
 };
 
-module.exports = {postStudyInfo,getStudyInfo };
+module.exports = { postStudyInfo, getStudyInfo };
