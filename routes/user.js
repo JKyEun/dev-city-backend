@@ -8,7 +8,7 @@ const {
 } = require('../controllers/userController');
 
 router.get('/:id', getUserInfo);
-router.post('/todolist/:id', setTodoList);
-router.delete('/todolist/:id', deleteTodoList);
+router.post('/setlist/:id', setTodoList);
+router.post('/deletelist/:id', deleteTodoList);
 
 module.exports = router;
