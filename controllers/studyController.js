@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb');
 const client = require('./mongoConnect'); // 몽고 디비 접속용 모듈 불러오기
 
 const getStudyInfo = async (req, res) => {
@@ -43,4 +44,20 @@ const postStudyInfo = async (req, res) => {
   }
 };
 
-module.exports = { postStudyInfo, getStudyInfo };
+const getStudyDetail = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await client.connect();
+    const studyDB = client.db('dev-city').collection('study');
+    const findStudy = await studyDB.findOne({ _id: new ObjectId(id) });
+    if (!findStudy) {
+      return res.status(404).send('Server Error');
+    }
+    res.status(200).json(findStudy);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error retrieving study' });
+  }
+};
+
+module.exports = { postStudyInfo, getStudyInfo, getStudyDetail };
