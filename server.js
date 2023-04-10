@@ -11,9 +11,11 @@ server.use(express.urlencoded({ extended: false }));
 
 const userRouter = require('./routes/user');
 const studyRouter = require('./routes/study');
+const recentStudyRouter = require('./routes/recentStudy')
 
 server.use('/user', userRouter);
 server.use('/study', studyRouter);
+server.use('/', recentStudyRouter)
 
 // eslint-disable-next-line no-unused-vars
 server.use((err, req, res, next) => {
