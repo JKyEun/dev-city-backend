@@ -1,8 +1,12 @@
 const express = require('express');
 
 const router = express.Router();
-const getRecentStudies = require('../controllers/recentStudyController');
+const {
+  getRecentStudies,
+  getAllUsers,
+} = require('../controllers/mainController');
 
 router.get('/', getRecentStudies);
+router.get('/', getAllUsers);
 
 module.exports = router;
