@@ -1,10 +1,11 @@
-// const jwt = require('jsonwebtoken');
-// const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const client = require('./mongoConnect');
 
 const signUp = async (req, res) => {
   try {
-    const { userId, password } = req.body;
+    const { userId } = req.body;
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
     await client.connect();
     const userDB = client.db('dev-city').collection('user');
@@ -15,7 +16,7 @@ const signUp = async (req, res) => {
 
     await userDB.insertOne({
       userId,
-      password,
+      password: hashedPassword,
       nickName: '닉네임을 설정하세요',
       level: 1,
       profileImg: '',
@@ -44,12 +45,14 @@ const signIn = async (req, res) => {
       return res.status(401).send('아이디가 잘못되었습니다.');
     }
 
-    const isPasswordCorrect = await userDB.findOne({ password });
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(401).send('비밀번호가 잘못되었습니다.');
     }
 
-    res.status(200).send('로그인 성공');
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET);
+
+    res.status(200).json({ token });
   } catch (error) {
     res.status(500).send('로그인 에러');
   }
