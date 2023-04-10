@@ -6,14 +6,53 @@ const getUserInfo = async (req, res) => {
     const userDB = client.db('dev-city').collection('user');
     const userInfo = await userDB.findOne({ userId: req.params.id });
     if (!userInfo) {
-      res.status(404).send('User not found');
+      res.status(404).send('404번 에러입니다.');
       return;
     }
     res.status(200).json(userInfo);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving user');
+    res.status(500).send('500번 에러입니다.');
   }
 };
 
-module.exports = getUserInfo;
+const setTodoList = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    await userDB.updateOne(
+      { userId: req.params.id },
+      { $push: { todoList: req.body } },
+    );
+    console.log('성공');
+    res.send('투두리스트 추가 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러입니다.');
+  }
+};
+
+const deleteTodoList = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    await userDB.updateOne(
+      { userId: req.params.id },
+      { $pull: { todoList: { id: req.body.id } } },
+      (updateErr, updateResult) => {
+        if (updateErr) throw updateErr;
+        console.log(updateResult);
+      },
+    );
+    res.status(200).send('투두리스트 삭제 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러입니다.');
+  }
+};
+
+module.exports = {
+  getUserInfo,
+  setTodoList,
+  deleteTodoList,
+};
