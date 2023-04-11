@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 const { ObjectId } = require('mongodb');
 const client = require('./mongoConnect'); // 몽고 디비 접속용 모듈 불러오기
 
@@ -20,10 +21,13 @@ const getStudyInfo = async (req, res) => {
 
 const postStudyInfo = async (req, res) => {
   const date = new Date();
+
   try {
     await client.connect();
     const studyDB = client.db('dev-city').collection('study');
-    console.log(req.body);
+    const userDB = client.db('dev-city').collection('user');
+
+    const { userId } = req.body; // 로컬스토리지에 있는 userId
 
     const newStudy = {
       studyName: req.body.study_name,
@@ -35,8 +39,83 @@ const postStudyInfo = async (req, res) => {
       board: req.body.board,
       structureImg: req.body.structureImg,
       createDate: date,
+      leaderId: userId,
     };
+
+    // study 컬렉션에 새로운 스터디 생성
     await studyDB.insertOne(newStudy);
+
+    // user 컬렉션에서 현재 내가 로그인한 userId로 접근
+    // 동일한 userId에 생성한 스터디 정보 일부 추가
+    const user = await userDB.findOne({ userId });
+
+    // 빌딩 숫자 1~9와 빌딩 위치 숫자 1~9
+    const buildingNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const locationNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    // 이미 생성된 스터디들 중에서 buildingNum에 있는 숫자들을 뽑아오기
+    const existBuilding = await userDB.find({}, { building: 1 }).toArray();
+    const usedBuilding = existBuilding.map((study) => study.building);
+
+    const existLocation = await userDB
+      .find({}, { buildingLocation: 1 })
+      .toArray();
+    const usedLocation = existLocation.map((study) => study.buildingLocation);
+
+    // buildingNum과 usedBuilding을 비교
+    // 사용하지 않은 숫자 뽑아오기
+    const availableNum = buildingNum.filter(
+      (num) => !usedBuilding.includes(num),
+    );
+
+    const availableLocationNum = locationNum.filter(
+      (num) => !usedLocation.includes(num),
+    );
+    // 사용 가능한 숫자가 없으면 오류 메시지를 반환하고 함수를 종료
+    if (availableNum.length === 0 || availableLocationNum === 0) {
+      return res
+        .status(400)
+        .json({ message: '더 이상 스터디를 생성할 수 없습니다.' });
+    }
+
+    // building을 랜덤으로 추출하여 스터디 생성에 활용
+    const building =
+      availableNum[Math.floor(Math.random() * availableNum.length)];
+
+    const buildingLocation =
+      availableLocationNum[
+        Math.floor(Math.random() * availableLocationNum.length)
+      ];
+
+    const updatedUser = {
+      ...user,
+      // user.studyList가 undefined인 경우 새로운 배열로 만들어서 추가
+      // 이미 값이 있으면 기존 스터디 목록에 새로운 스터디를 추가
+      studyList: user.studyList
+        ? [
+            ...user.studyList,
+            {
+              building,
+              buildingLocation,
+              studyName: newStudy.studyName,
+              createDate: newStudy.createDate,
+              skills: newStudy.skills,
+            },
+          ]
+        : [
+            {
+              building,
+              buildingLocation,
+              studyName: newStudy.studyName,
+              createDate: newStudy.createDate,
+              skills: newStudy.skills,
+            },
+          ],
+    };
+
+    // 사용자 컬렉션에서 해당 사용자의 정보 업데이트
+    await userDB.updateOne({ userId }, { $set: updatedUser });
+
     res.status(200).json('스터디 생성 성공');
   } catch (err) {
     console.error(err);
