@@ -25,6 +25,10 @@ const signUp = async (req, res) => {
       todoList: [],
       field: '관심 분야를 설정하세요',
       userName: '이름을 입력하세요',
+      studyList: [],
+      likeStudyList: [],
+      follower: [],
+      following: [],
     });
 
     res.status(201).send('회원가입 성공');
