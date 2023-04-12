@@ -32,6 +32,7 @@ const postStudyInfo = async (req, res) => {
     const newStudy = {
       studyName: req.body.study_name,
       studyIntro: req.body.study_intro,
+      studySystem: req.body.study_system,
       field: req.body.study_field,
       skills: req.body.skills,
       memberNum: req.body.member_num,
@@ -40,6 +41,7 @@ const postStudyInfo = async (req, res) => {
       structureImg: req.body.structureImg,
       createDate: date,
       leaderId: userId,
+      etc: req.body.study_etc,
     };
 
     // study 컬렉션에 새로운 스터디 생성
