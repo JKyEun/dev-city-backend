@@ -7,6 +7,7 @@ const {
   setTodoList,
   deleteTodoList,
   updateTodoList,
+  updateUserInfo,
 } = require('../controllers/userController');
 
 const {
@@ -22,5 +23,6 @@ router.post('/updatelist/:id', updateTodoList);
 router.post('/signup', signUp);
 router.post('/signin', signIn);
 router.post('/kakaologin', kakaoLogin);
+router.post('/updateuser/:id', updateUserInfo);
 
 module.exports = router;
