@@ -6,6 +6,11 @@ const {
   getUserInfo,
   setTodoList,
   deleteTodoList,
+<<<<<<< Updated upstream
+=======
+  updateTodoList,
+  updateUserInfo,
+>>>>>>> Stashed changes
 } = require('../controllers/userController');
 
 const {
@@ -20,5 +25,6 @@ router.post('/deletelist/:id', deleteTodoList);
 router.post('/signup', signUp);
 router.post('/signin', signIn);
 router.post('/kakaologin', kakaoLogin);
+router.post('/updateuser/:id', updateUserInfo);
 
 module.exports = router;

@@ -51,8 +51,48 @@ const deleteTodoList = async (req, res) => {
   }
 };
 
+const updateTodoList = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    await userDB.updateOne(
+      { userId: req.params.id, 'todoList.id': req.body.id },
+      { $set: { 'todoList.$': req.body } },
+      (updateErr, updateResult) => {
+        if (updateErr) throw updateErr;
+        console.log(updateResult);
+      },
+    );
+    res.status(200).send('투두리스트 업데이트 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러입니다.');
+  }
+};
+
+const updateUserInfo = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    await userDB.updateOne(
+      { userId: req.params.id },
+      { $set: req.body },
+      (updateErr, updateResult) => {
+        if (updateErr) throw updateErr;
+        console.log(updateResult);
+      },
+    );
+    res.status(200).send('유저 정보 업데이트 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러입니다.');
+  }
+};
+
 module.exports = {
   getUserInfo,
   setTodoList,
   deleteTodoList,
+  updateTodoList,
+  updateUserInfo,
 };
