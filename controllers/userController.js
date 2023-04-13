@@ -74,9 +74,10 @@ const updateUserInfo = async (req, res) => {
   try {
     await client.connect();
     const userDB = client.db('dev-city').collection('user');
+    const { _id, ...updateFields } = req.body;
     await userDB.updateOne(
       { userId: req.params.id },
-      { $set: req.body },
+      { $set: updateFields },
       (updateErr, updateResult) => {
         if (updateErr) throw updateErr;
         console.log(updateResult);
