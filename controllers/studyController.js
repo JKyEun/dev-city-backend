@@ -174,9 +174,25 @@ const updateStudyInfo = async (req, res) => {
   }
 };
 
+const pushLikedStudy = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    await userDB.updateOne(
+      { userId: req.body.userId },
+      { $push: { likedStudy: req.body.studyId } },
+    );
+    res.status(200).json('좋아요 항목 추가 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+};
+
 module.exports = {
   postStudyInfo,
   getStudyInfo,
   getStudyDetail,
   updateStudyInfo,
+  pushLikedStudy,
 };
