@@ -15,7 +15,7 @@ const mainRouter = require('./routes/main');
 
 server.use('/user', userRouter);
 server.use('/study', studyRouter);
-server.use('/', mainRouter);
+server.use('/allUser', mainRouter);
 
 // eslint-disable-next-line no-unused-vars
 server.use((err, req, res, next) => {

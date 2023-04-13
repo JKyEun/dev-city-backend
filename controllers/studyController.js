@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 const { ObjectId } = require('mongodb');
-const client = require('./mongoConnect'); // 몽고 디비 접속용 모듈 불러오기
+const client = require('./mongoConnect');
 
 const getStudyInfo = async (req, res) => {
   try {
@@ -29,9 +29,23 @@ const postStudyInfo = async (req, res) => {
 
     const { userId } = req.body; // 로컬스토리지에 있는 userId
 
+    // user 컬렉션에서 현재 내가 로그인한 userId로 접근
+    // 동일한 userId에 생성한 스터디 정보 일부 추가
+    const user = await userDB.findOne({ userId });
+
+    // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
+    if (user.studyList && user.studyList.length >= 9) {
+      return res
+        .status(404)
+        .json(
+          '더 이상 스터디를 생성할 수 없습니다. \n최대 9개의 스터디를 생성할 수 있습니다.',
+        );
+    }
+
     const newStudy = {
       studyName: req.body.study_name,
       studyIntro: req.body.study_intro,
+      studySystem: req.body.study_system,
       field: req.body.study_field,
       skills: req.body.skills,
       memberNum: req.body.member_num,
@@ -40,14 +54,11 @@ const postStudyInfo = async (req, res) => {
       structureImg: req.body.structureImg,
       createDate: date,
       leaderId: userId,
+      etc: req.body.study_etc,
     };
 
     // study 컬렉션에 새로운 스터디 생성
-    await studyDB.insertOne(newStudy);
-
-    // user 컬렉션에서 현재 내가 로그인한 userId로 접근
-    // 동일한 userId에 생성한 스터디 정보 일부 추가
-    const user = await userDB.findOne({ userId });
+    const insertResult = await studyDB.insertOne(newStudy);
 
     // 빌딩 숫자 1~9와 빌딩 위치 숫자 1~9
     const buildingNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -72,16 +83,13 @@ const postStudyInfo = async (req, res) => {
       (num) => !usedLocation.includes(num),
     );
     // 사용 가능한 숫자가 없으면 오류 메시지를 반환하고 함수를 종료
-    if (availableNum.length === 0 || availableLocationNum === 0) {
-      return res
-        .status(400)
-        .json({ message: '더 이상 스터디를 생성할 수 없습니다.' });
+    if (availableNum.length === 0 || availableLocationNum.length === 0) {
+      return res.status(404).json('더 이상 스터디를 생성할 수 없습니다.');
     }
 
     // building을 랜덤으로 추출하여 스터디 생성에 활용
     const building =
       availableNum[Math.floor(Math.random() * availableNum.length)];
-
     const buildingLocation =
       availableLocationNum[
         Math.floor(Math.random() * availableLocationNum.length)
@@ -100,6 +108,8 @@ const postStudyInfo = async (req, res) => {
               studyName: newStudy.studyName,
               createDate: newStudy.createDate,
               skills: newStudy.skills,
+              field: newStudy.field,
+              objectId: insertResult.insertedId,
             },
           ]
         : [
@@ -109,6 +119,8 @@ const postStudyInfo = async (req, res) => {
               studyName: newStudy.studyName,
               createDate: newStudy.createDate,
               skills: newStudy.skills,
+              field: newStudy.field,
+              objectId: insertResult.insertedId,
             },
           ],
     };
@@ -139,4 +151,32 @@ const getStudyDetail = async (req, res) => {
   }
 };
 
-module.exports = { postStudyInfo, getStudyInfo, getStudyDetail };
+const updateStudyInfo = async (req, res) => {
+  const { id } = req.params;
+  const { updatedMember } = req.body;
+  try {
+    await client.connect();
+    const studyDB = client.db('dev-city').collection('study');
+    const updateStudy = await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      { $push: { member: updatedMember } },
+    );
+
+    if (updateStudy.modifiedCount === 1) {
+      res.status(200).json('스터디 멤버 업데이트 성공!');
+      console.log({ updatedMember });
+    } else {
+      res.status(404).json('스터디를 찾을 수 없음');
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json('스터디 멤버 업데이트 실패');
+  }
+};
+
+module.exports = {
+  postStudyInfo,
+  getStudyInfo,
+  getStudyDetail,
+  updateStudyInfo,
+};
