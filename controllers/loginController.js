@@ -86,7 +86,7 @@ const kakaoLogin = async (req, res) => {
         githubAddress: '깃허브 주소를 설정하세요',
         email: '이메일을 설정하세요',
         todoList: [],
-        field: '관심 분야를 설정하세요',
+        field: '관심분야 없음',
         userName: '이름을 입력하세요',
         joinedStudy: [],
         likedStudy: [],

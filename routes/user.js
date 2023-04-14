@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -8,6 +10,7 @@ const {
   deleteTodoList,
   updateTodoList,
   updateUserInfo,
+  updateUserImg,
 } = require('../controllers/userController');
 
 const {
@@ -15,6 +18,23 @@ const {
   signIn,
   kakaoLogin,
 } = require('../controllers/loginController');
+
+const dir = './uploads'; // node.js가 하는것이므로 상대경로로 작성해줘야함
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + Date.now());
+  },
+});
+const limits = {
+  fileSize: 1024 * 1024 * 2,
+};
+
+const upload = multer({ storage, limits });
+
+if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
 router.get('/:id', getUserInfo);
 router.post('/setlist/:id', setTodoList);
@@ -24,5 +44,6 @@ router.post('/signup', signUp);
 router.post('/signin', signIn);
 router.post('/kakaologin', kakaoLogin);
 router.post('/updateuser/:id', updateUserInfo);
+router.post('/updateuser/images/:id', upload.single('img'), updateUserImg);
 
 module.exports = router;
