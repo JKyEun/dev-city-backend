@@ -25,8 +25,8 @@ const signUp = async (req, res) => {
       todoList: [],
       field: '관심분야 없음',
       userName: '이름을 입력하세요',
-      studyList: [],
-      likeStudyList: [],
+      joinedStudy: [],
+      likedStudy: [],
       follower: [],
       following: [],
     });
@@ -88,8 +88,8 @@ const kakaoLogin = async (req, res) => {
         todoList: [],
         field: '관심 분야를 설정하세요',
         userName: '이름을 입력하세요',
-        studyList: [],
-        likeStudyList: [],
+        joinedStudy: [],
+        likedStudy: [],
         follower: [],
         following: [],
       });
