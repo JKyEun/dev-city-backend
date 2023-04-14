@@ -34,7 +34,7 @@ const postStudyInfo = async (req, res) => {
     const user = await userDB.findOne({ userId });
 
     // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
-    if (user.studyList && user.studyList.length >= 9) {
+    if (user.joinedStudy && user.joinedStudy.length >= 9) {
       return res
         .status(404)
         .json(
@@ -97,11 +97,11 @@ const postStudyInfo = async (req, res) => {
 
     const updatedUser = {
       ...user,
-      // user.studyList가 undefined인 경우 새로운 배열로 만들어서 추가
+      // user.joinedStudy undefined인 경우 새로운 배열로 만들어서 추가
       // 이미 값이 있으면 기존 스터디 목록에 새로운 스터디를 추가
-      studyList: user.studyList
+      joinedStudy: user.joinedStudy
         ? [
-            ...user.studyList,
+            ...user.joinedStudy,
             {
               building,
               buildingLocation,
