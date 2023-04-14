@@ -152,11 +152,33 @@ const joinStudy = async (req, res) => {
       },
     );
     res.status(200).send('스터디 참여하기 성공');
+    
+const updateUserImg = async (req, res) => {
+  try {
+    await client.connect();
+    const userDB = client.db('dev-city').collection('user');
+    const { _id } = req.body;
+
+    const modify = {
+      userId: _id,
+      profileImg: req.file ? req.file.filename : null,
+    };
+    if (req.file) modify.profileImg = req.file.filename;
+    await userDB.updateOne(
+      {
+        userId: _id,
+      },
+      {
+        $set: modify,
+      },
+    );
+    res.status(200).send('유저 정보 업데이트 성공');
   } catch (err) {
     console.error(err);
     res.status(500).send('500번 에러입니다.');
   }
 };
+
 module.exports = {
   getUserInfo,
   setTodoList,
@@ -164,4 +186,5 @@ module.exports = {
   updateTodoList,
   updateUserInfo,
   joinStudy,
+  updateUserImg,
 };
