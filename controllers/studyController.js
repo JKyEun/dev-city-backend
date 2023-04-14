@@ -32,7 +32,6 @@ const postStudyInfo = async (req, res) => {
     // user 컬렉션에서 현재 내가 로그인한 userId로 접근
     // 동일한 userId에 생성한 스터디 정보 일부 추가
     const user = await userDB.findOne({ userId });
-    console.log('user', user);
 
     // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
     if (user.joinedStudy && user.joinedStudy.length >= 9) {
@@ -66,13 +65,17 @@ const postStudyInfo = async (req, res) => {
     const locationNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     // tetz, 빌딩 안겹치는 코드
-    const existBuildingArr = user.joinedStudy.map((el) => el.building);
+    const existBuildingArr = user.joinedStudy
+      ? user.joinedStudy.map((el) => el.building)
+      : [];
     const possibleBuildingArr = buildingNum.filter(
       (el) => !existBuildingArr.includes(el),
     );
 
     // tetz, 로케이션 안겹치는 코드
-    const existLocationArr = user.joinedStudy.map((el) => el.buildingLocation);
+    const existLocationArr = user.joinedStudy
+      ? user.joinedStudy.map((el) => el.buildingLocation)
+      : [];
     const possibleLocationArr = locationNum.filter(
       (el) => !existLocationArr.includes(el),
     );
