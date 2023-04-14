@@ -59,16 +59,20 @@ const deletePost = async (req, res) => {
 
 const modifyPost = async (req, res) => {
   const { id } = req.params;
+  const { id: boardId, content, date } = req.body; // 수정할 게시글의 id와 content를 추출
+
   try {
     await client.connect();
     const studyDB = client.db('dev-city').collection('study');
     await studyDB.updateOne(
-      { userId: id, 'board.id': req.body.id },
-      { $set: { 'board.$': req.body } },
-      (updateErr, updateResult) => {
-        if (updateErr) throw updateErr;
-        console.log(updateResult);
-      },
+      { _id: new ObjectId(id), 'board.id': boardId },
+      {
+        $set: {
+          'board.$.content': content,
+          'board.$.date': date,
+          'board.$.isModified': true,
+        },
+      }, // 해당 게시글의 content와 date, isModified 수정
     );
 
     res.status(200).send('게시글 수정 성공');
