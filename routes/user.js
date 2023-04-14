@@ -10,6 +10,7 @@ const {
   deleteTodoList,
   updateTodoList,
   updateUserInfo,
+  joinStudy,
   updateUserImg,
 } = require('../controllers/userController');
 
@@ -48,6 +49,7 @@ router.post('/kakaologin', kakaoLogin);
 router.post('/githublogin', githubLogin);
 router.post('/githublogin/fetch', githubLoginFetch);
 router.post('/updateuser/:id', updateUserInfo);
+router.post('/joinstudy', joinStudy);
 router.post('/updateuser/images/:id', upload.single('img'), updateUserImg);
 
 module.exports = router;
