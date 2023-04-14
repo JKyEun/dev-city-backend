@@ -8,6 +8,7 @@ const {
   deleteTodoList,
   updateTodoList,
   updateUserInfo,
+  joinStudy,
 } = require('../controllers/userController');
 
 const {
@@ -28,5 +29,6 @@ router.post('/kakaologin', kakaoLogin);
 router.post('/githublogin', githubLogin);
 router.post('/githublogin/fetch', githubLoginFetch);
 router.post('/updateuser/:id', updateUserInfo);
+router.post('/joinstudy', joinStudy);
 
 module.exports = router;

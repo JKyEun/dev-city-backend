@@ -32,6 +32,7 @@ const postStudyInfo = async (req, res) => {
     // user 컬렉션에서 현재 내가 로그인한 userId로 접근
     // 동일한 userId에 생성한 스터디 정보 일부 추가
     const user = await userDB.findOne({ userId });
+    console.log('user', user);
 
     // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
     if (user.joinedStudy && user.joinedStudy.length >= 9) {
@@ -64,40 +65,31 @@ const postStudyInfo = async (req, res) => {
     const buildingNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     const locationNum = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    // 이미 생성된 스터디들 중에서 buildingNum에 있는 숫자들을 뽑아오기
-    const existBuilding = await userDB.find({}, { building: 1 }).toArray();
-    const usedBuilding = existBuilding.map((study) => study.building);
-
-    const existLocation = await userDB
-      .find({}, { buildingLocation: 1 })
-      .toArray();
-    const usedLocation = existLocation.map((study) => study.buildingLocation);
-
-    // buildingNum과 usedBuilding을 비교
-    // 사용하지 않은 숫자 뽑아오기
-    const availableNum = buildingNum.filter(
-      (num) => !usedBuilding.includes(num),
+    // tetz, 빌딩 안겹치는 코드
+    const existBuildingArr = user.joinedStudy.map((el) => el.building);
+    const possibleBuildingArr = buildingNum.filter(
+      (el) => !existBuildingArr.includes(el),
     );
 
-    const availableLocationNum = locationNum.filter(
-      (num) => !usedLocation.includes(num),
+    // tetz, 로케이션 안겹치는 코드
+    const existLocationArr = user.joinedStudy.map((el) => el.buildingLocation);
+    const possibleLocationArr = locationNum.filter(
+      (el) => !existLocationArr.includes(el),
     );
-    // 사용 가능한 숫자가 없으면 오류 메시지를 반환하고 함수를 종료
-    if (availableNum.length === 0 || availableLocationNum.length === 0) {
-      return res.status(404).json('더 이상 스터디를 생성할 수 없습니다.');
-    }
 
     // building을 랜덤으로 추출하여 스터디 생성에 활용
     const building =
-      availableNum[Math.floor(Math.random() * availableNum.length)];
+      possibleBuildingArr[
+        Math.floor(Math.random() * possibleBuildingArr.length)
+      ];
     const buildingLocation =
-      availableLocationNum[
-        Math.floor(Math.random() * availableLocationNum.length)
+      possibleLocationArr[
+        Math.floor(Math.random() * possibleLocationArr.length)
       ];
 
     const updatedUser = {
       ...user,
-      // user.joinedStudy undefined인 경우 새로운 배열로 만들어서 추가
+      // user.joinedStudy가 undefined인 경우 새로운 배열로 만들어서 추가
       // 이미 값이 있으면 기존 스터디 목록에 새로운 스터디를 추가
       joinedStudy: user.joinedStudy
         ? [
@@ -110,6 +102,7 @@ const postStudyInfo = async (req, res) => {
               skills: newStudy.skills,
               field: newStudy.field,
               objectId: insertResult.insertedId,
+              leaderId: newStudy.leaderId,
             },
           ]
         : [
@@ -121,6 +114,7 @@ const postStudyInfo = async (req, res) => {
               skills: newStudy.skills,
               field: newStudy.field,
               objectId: insertResult.insertedId,
+              leaderId: newStudy.leaderId,
             },
           ],
     };
@@ -157,14 +151,18 @@ const updateStudyInfo = async (req, res) => {
   try {
     await client.connect();
     const studyDB = client.db('dev-city').collection('study');
+    const study = await studyDB.findOne({ _id: new ObjectId(id) });
+    const currentNum2 = study.memberNum.currentNum;
     const updateStudy = await studyDB.updateOne(
       { _id: new ObjectId(id) },
-      { $push: { member: updatedMember } },
+      {
+        $push: { member: updatedMember },
+        $set: { 'memberNum.currentNum': currentNum2 + 1 },
+      },
     );
 
     if (updateStudy.modifiedCount === 1) {
       res.status(200).json('스터디 멤버 업데이트 성공!');
-      console.log({ updatedMember });
     } else {
       res.status(404).json('스터디를 찾을 수 없음');
     }
@@ -177,21 +175,12 @@ const updateStudyInfo = async (req, res) => {
 const pushLikedStudy = async (req, res) => {
   try {
     await client.connect();
-
     const userDB = client.db('dev-city').collection('user');
-    if (!req.body.isDelete) {
-      await userDB.updateOne(
-        { userId: req.body.userId },
-        { $push: { likedStudy: req.body.studyId } },
-      );
-      res.status(200).json('좋아요 항목 추가 성공');
-    } else {
-      await userDB.updateOne(
-        { userId: req.body.userId },
-        { $pull: { likedStudy: req.body.studyId } },
-      );
-      res.status(200).json('좋아요 항목 제거 성공');
-    }
+    await userDB.updateOne(
+      { userId: req.body.userId },
+      { $push: { likedStudy: req.body.studyId } },
+    );
+    res.status(200).json('좋아요 항목 추가 성공');
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error' });
