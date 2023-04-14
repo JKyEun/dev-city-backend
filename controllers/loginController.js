@@ -162,8 +162,8 @@ const githubLogin = async (req, res) => {
         todoList: [],
         field: '관심분야 없음',
         userName: req.body.userName,
-        studyList: [],
-        likeStudyList: [],
+        joinedStudy: [],
+        likedStudy: [],
         follower: [],
         following: [],
       });
