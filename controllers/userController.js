@@ -152,7 +152,12 @@ const joinStudy = async (req, res) => {
       },
     );
     res.status(200).send('스터디 참여하기 성공');
-    
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러입니다.');
+  }
+};
+
 const updateUserImg = async (req, res) => {
   try {
     await client.connect();
