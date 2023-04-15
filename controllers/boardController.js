@@ -106,7 +106,29 @@ const addComment = async (req, res) => {
   }
 };
 
-// const deleteComment = async (req, res) => {};
+const deleteComment = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await client.connect();
+    const studyDB = client.db('dev-city').collection('study');
+    await studyDB.updateOne(
+      {
+        _id: new ObjectId(id),
+        'board.id': req.body.boardId,
+      },
+      {
+        $pull: {
+          'board.$.comment': { id: req.body.id },
+        },
+      },
+    );
+
+    res.status(200).send('댓글 삭제 성공');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('500번 에러');
+  }
+};
 
 // const modifyComment = async (req, res) => {};
 
@@ -116,6 +138,6 @@ module.exports = {
   deletePost,
   modifyPost,
   addComment,
-  // deleteComment,
+  deleteComment,
   // modifyComment,
 };
