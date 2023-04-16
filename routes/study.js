@@ -10,12 +10,16 @@ const {
   pushLikedStudy,
   deleteStudyInfo,
   leaveStudy,
+  closeStudy,
+  openStudy,
 } = require('../controllers/studyController');
 
 router.get('/', getStudyInfo);
 router.post('/like', pushLikedStudy);
 router.post('/create_study', postStudyInfo);
 router.get('/detail/:id', getStudyDetail);
+router.post('/detail/:id/close', closeStudy);
+router.post('/detail/:id/open', openStudy);
 router.put('/update/:id', updateStudyInfo);
 router.delete('/delete/:id', deleteStudyInfo);
 router.delete('/leave/:id', leaveStudy);
