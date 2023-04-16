@@ -15,8 +15,20 @@ const io = new Server(httpServer, {
   },
 });
 
-io.on('connection', () => {
+io.on('connection', (socket) => {
   console.log('소켓 연결 성공');
+
+  socket.on('join', (data) => {
+    socket.join(data.roomId);
+    console.log(`${data.userName}님이 ${data.roomId}방에 참가하였습니다.`);
+  });
+
+  socket.on('send_message', (data) => {
+    console.log(
+      `${data.roomId}방에서 ${data.userName}님이 메시지를 보냈습니다: ${data.message}`,
+    );
+    socket.to(data.roomId).emit('receive_message', data);
+  });
 });
 
 server.use(cors());
