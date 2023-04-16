@@ -162,22 +162,26 @@ const updateUserImg = async (req, res) => {
   try {
     await client.connect();
     const userDB = client.db('dev-city').collection('user');
-    const { _id } = req.body;
+    const { id } = req.params;
 
     const modify = {
-      userId: _id,
+      userId: id,
       profileImg: req.file ? req.file.filename : null,
     };
     if (req.file) modify.profileImg = req.file.filename;
     await userDB.updateOne(
       {
-        userId: _id,
+        userId: id,
       },
       {
         $set: modify,
       },
     );
-    res.status(200).send('유저 정보 업데이트 성공');
+    console.log(`업데이트된 이미지 파일 이름: ${modify.profileImg}`);
+    res.status(200).send({
+      message: '유저 정보 업데이트 성공',
+      profileImg: modify.profileImg,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('500번 에러입니다.');

@@ -28,14 +28,11 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + Date.now());
+    cb(null, file.fieldname + '_' + Date.now());
   },
 });
-const limits = {
-  fileSize: 1024 * 1024 * 2,
-};
 
-const upload = multer({ storage, limits });
+const upload = multer({ storage });
 
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
