@@ -9,6 +9,9 @@ server.use(cors());
 server.use(express.json({ limit: 5000000 }));
 server.use(express.urlencoded({ extended: false }));
 
+server.use(express.static('public'));
+server.use('/uploads', express.static('uploads'));
+
 const userRouter = require('./routes/user');
 const studyRouter = require('./routes/study');
 const mainRouter = require('./routes/main');
