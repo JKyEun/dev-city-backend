@@ -304,6 +304,36 @@ const leaveStudy = async (req, res) => {
   }
 };
 
+const closeStudy = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const studyDB = client.db('dev-city').collection('study');
+    await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isClosed: true } },
+    );
+    res.status(200).json('모집 중단 완료');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+};
+
+const openStudy = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const studyDB = client.db('dev-city').collection('study');
+    await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isClosed: false } },
+    );
+    res.status(200).json('모집 활성화 완료');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+};
+
 module.exports = {
   postStudyInfo,
   getStudyInfo,
@@ -312,4 +342,6 @@ module.exports = {
   pushLikedStudy,
   deleteStudyInfo,
   leaveStudy,
+  closeStudy,
+  openStudy,
 };
