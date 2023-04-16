@@ -8,6 +8,8 @@ const {
   getStudyInfo,
   updateStudyInfo,
   pushLikedStudy,
+  deleteStudyInfo,
+  leaveStudy,
 } = require('../controllers/studyController');
 
 router.get('/', getStudyInfo);
@@ -15,5 +17,7 @@ router.post('/like', pushLikedStudy);
 router.post('/create_study', postStudyInfo);
 router.get('/detail/:id', getStudyDetail);
 router.put('/update/:id', updateStudyInfo);
+router.delete('/delete/:id', deleteStudyInfo);
+router.delete('/leave/:id', leaveStudy);
 
 module.exports = router;
