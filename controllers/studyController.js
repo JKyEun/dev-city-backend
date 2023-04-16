@@ -56,6 +56,7 @@ const postStudyInfo = async (req, res) => {
       leaderId: userId,
       etc: req.body.study_etc,
       request: req.body.request,
+      isClosed: req.body.isClosed,
     };
 
     // study 컬렉션에 새로운 스터디 생성
