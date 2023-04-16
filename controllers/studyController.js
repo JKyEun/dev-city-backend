@@ -33,6 +33,9 @@ const postStudyInfo = async (req, res) => {
     // 동일한 userId에 생성한 스터디 정보 일부 추가
     const user = await userDB.findOne({ userId });
 
+    // user 컬렉션에 있는 nickName 가져오기
+    const { nickName } = user;
+
     // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
     if (user.joinedStudy && user.joinedStudy.length >= 9) {
       return res
@@ -57,6 +60,7 @@ const postStudyInfo = async (req, res) => {
       etc: req.body.study_etc,
       request: req.body.request,
       isClosed: req.body.isClosed,
+      nickName,
     };
 
     // study 컬렉션에 새로운 스터디 생성
@@ -127,10 +131,13 @@ const postStudyInfo = async (req, res) => {
     // 사용자 컬렉션에서 해당 사용자의 정보 업데이트
     await userDB.updateOne({ userId }, { $set: updatedUser });
 
-    res.status(200).json('스터디 생성 성공');
+    res.status(200).send({
+      message: '스터디 생성 성공',
+      nickName,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving study');
+    res.status(500).send('스터디 생성 에러');
   }
 };
 
