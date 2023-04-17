@@ -42,12 +42,14 @@ const userRouter = require('./routes/user');
 const studyRouter = require('./routes/study');
 const mainRouter = require('./routes/main');
 const boardRouter = require('./routes/board');
+const chatRouter = require('./routes/chat');
 const inviteRouter = require('./routes/invite');
 
 server.use('/user', userRouter);
 server.use('/study', studyRouter);
 server.use('/allUser', mainRouter);
 server.use('/board', boardRouter);
+server.use('/chat', chatRouter);
 server.use('/invite', inviteRouter);
 
 // eslint-disable-next-line no-unused-vars
