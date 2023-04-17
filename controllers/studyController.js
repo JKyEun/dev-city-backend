@@ -33,6 +33,9 @@ const postStudyInfo = async (req, res) => {
     // 동일한 userId에 생성한 스터디 정보 일부 추가
     const user = await userDB.findOne({ userId });
 
+    // user 컬렉션에 있는 nickName 가져오기
+    const { nickName } = user;
+
     // 스터디 생성 제한: 한 유저는 9개 이하의 스터디만 생성할 수 있음
     if (user.joinedStudy && user.joinedStudy.length >= 9) {
       return res
@@ -55,6 +58,9 @@ const postStudyInfo = async (req, res) => {
       createDate: date,
       leaderId: userId,
       etc: req.body.study_etc,
+      request: req.body.request,
+      isClosed: req.body.isClosed,
+      nickName,
     };
 
     // study 컬렉션에 새로운 스터디 생성
@@ -125,10 +131,13 @@ const postStudyInfo = async (req, res) => {
     // 사용자 컬렉션에서 해당 사용자의 정보 업데이트
     await userDB.updateOne({ userId }, { $set: updatedUser });
 
-    res.status(200).json('스터디 생성 성공');
+    res.status(200).send({
+      message: '스터디 생성 성공',
+      nickName,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error retrieving study');
+    res.status(500).send('스터디 생성 에러');
   }
 };
 
@@ -198,10 +207,149 @@ const pushLikedStudy = async (req, res) => {
   }
 };
 
+const deleteStudyInfo = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await client.connect();
+    const studyDB = client.db('dev-city').collection('study');
+    const userDB = client.db('dev-city').collection('user');
+
+    const deleteStudy = await studyDB.deleteOne({ _id: new ObjectId(id) });
+
+    if (deleteStudy.deletedCount === 0) {
+      return res.status(404).send('스터디를 삭제할 수 없습니다.');
+    }
+
+    // user 컬렉션에서 해당 스터디를 참여하고 있는 모든 사용자를 찾아서 joinedStudy 배열에서 삭제
+    const users = await userDB
+      .find({ 'joinedStudy.objectId': new ObjectId(id) })
+      .toArray();
+
+    for (let i = 0; i < users.length; i += 1) {
+      const user = users[i];
+      const updatedJoinedStudy = user.joinedStudy.filter(
+        (study) => String(study.objectId) !== id,
+      );
+      // eslint-disable-next-line no-await-in-loop
+      await userDB.updateOne(
+        { _id: user._id },
+        { $set: { joinedStudy: updatedJoinedStudy } },
+      );
+    }
+
+    res.status(200).send('스터디가 삭제되었습니다.');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('스터디 삭제 에러');
+  }
+};
+
+const leaveStudy = async (req, res) => {
+  const { id } = req.params; // 탈퇴하려는 스터디의 ID 값
+  const { userId } = req.body; // 탈퇴하려는 사용자의 ID 값
+
+  try {
+    await client.connect();
+    const studyDB = client.db('dev-city').collection('study');
+    const userDB = client.db('dev-city').collection('user');
+
+    // 스터디가 존재하는지 확인
+    const study = await studyDB.findOne({ _id: new ObjectId(id) });
+
+    // 사용자가 있는지 확인
+    const user = await userDB.findOne({ userId });
+
+    const joinedStudy = user.joinedStudy.find(
+      // eslint-disable-next-line no-shadow
+      (study) => String(study.objectId) === id,
+    );
+
+    console.log('user:', user);
+    console.log('study:', study);
+    console.log('joinedStudy:', joinedStudy);
+
+    // user 컬렉션에서 joinedStudy 배열에서 해당 스터디 정보 삭제
+    const leaveJoinedStudy = user.joinedStudy.filter(
+      // eslint-disable-next-line no-shadow
+      (study) => String(study.objectId) !== id,
+    );
+
+    // 해당 사용자의 joinedStudy를 업데이트
+    await userDB.updateOne(
+      { userId },
+      { $set: { joinedStudy: leaveJoinedStudy } },
+    );
+
+    // study 컬렉션에서 member 배열에서 사용자 정보 삭제
+    const updatedMembers = study.member
+      ? study.member.filter((member) => String(member.memberId) !== userId)
+      : [];
+
+    // memberNum 배열 안의 currentNum 값을 1 감소시킴
+    const updatedMemberNum = {
+      ...study.memberNum,
+      currentNum: study.memberNum.currentNum - 1,
+    };
+    console.log('leaveJoinedStudy:', leaveJoinedStudy);
+
+    await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          member: updatedMembers,
+          memberNum: updatedMemberNum,
+        },
+      },
+    );
+    res.status(200).send({
+      message: '스터디 탈퇴 성공',
+      updatedMembers,
+      updatedMemberNum,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('스터디 탈퇴 에러');
+  }
+};
+
+const closeStudy = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const studyDB = client.db('dev-city').collection('study');
+    await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isClosed: true } },
+    );
+    res.status(200).json('모집 중단 완료');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+};
+
+const openStudy = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const studyDB = client.db('dev-city').collection('study');
+    await studyDB.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isClosed: false } },
+    );
+    res.status(200).json('모집 활성화 완료');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error' });
+  }
+};
+
 module.exports = {
   postStudyInfo,
   getStudyInfo,
   getStudyDetail,
   updateStudyInfo,
   pushLikedStudy,
+  deleteStudyInfo,
+  leaveStudy,
+  closeStudy,
+  openStudy,
 };
