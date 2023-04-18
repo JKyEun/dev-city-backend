@@ -342,6 +342,34 @@ const openStudy = async (req, res) => {
   }
 };
 
+const modifyStudyInfo = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const studyDB = client.db('dev-city').collection('study');
+
+    const updateModifyData = {
+      studyName: req.body.modifyData.studyName,
+      studyIntro: req.body.modifyData.studyIntro,
+      studySystem: req.body.modifyData.studySystem,
+      field: req.body.modifyData.field,
+      skills: req.body.modifyData.skills,
+      etc: req.body.modifyData.etc,
+    };
+
+    const updatedStudy = await studyDB.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updateModifyData },
+      { returnOriginal: false },
+    );
+    console.log(updatedStudy);
+    res.status(200).json('스터디 수정이 완료되었습니다.');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '스터디 수정 에러' });
+  }
+};
+
 module.exports = {
   postStudyInfo,
   getStudyInfo,
@@ -352,4 +380,5 @@ module.exports = {
   leaveStudy,
   closeStudy,
   openStudy,
+  modifyStudyInfo,
 };
