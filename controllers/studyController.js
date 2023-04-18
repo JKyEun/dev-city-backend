@@ -33,6 +33,9 @@ const postStudyInfo = async (req, res) => {
     // 동일한 userId에 생성한 스터디 정보 일부 추가
     const user = await userDB.findOne({ userId });
 
+    console.log({ userId });
+    console.log(userId);
+    console.log(user);
     // user 컬렉션에 있는 nickName 가져오기
     const { nickName } = user;
 
@@ -344,10 +347,17 @@ const openStudy = async (req, res) => {
 
 const modifyStudyInfo = async (req, res) => {
   const { id } = req.params;
+  const { userId } = req.body;
 
   try {
+    await client.connect();
     const studyDB = client.db('dev-city').collection('study');
+    const userDB = client.db('dev-city').collection('user');
 
+    const findStudy = await studyDB.findOne({ _id: new ObjectId(id) });
+    const user = await userDB.findOne({ userId });
+
+    console.log(user.joinedStudy);
     const updateModifyData = {
       studyName: req.body.modifyData.studyName,
       studyIntro: req.body.modifyData.studyIntro,
@@ -355,14 +365,35 @@ const modifyStudyInfo = async (req, res) => {
       field: req.body.modifyData.field,
       skills: req.body.modifyData.skills,
       etc: req.body.modifyData.etc,
+      modified: true,
     };
 
-    const updatedStudy = await studyDB.findOneAndUpdate(
+    await studyDB.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: updateModifyData },
       { returnOriginal: false },
     );
-    console.log(updatedStudy);
+
+    const updateUserData = {
+      joinedStudy: user.joinedStudy.map((study) => {
+        if (study.studyName === findStudy.studyName) {
+          return {
+            ...study,
+            studyName: updateModifyData.studyName,
+            field: updateModifyData.field,
+            skills: updateModifyData.skills,
+          };
+        }
+        return study;
+      }),
+    };
+
+    await userDB.findOneAndUpdate(
+      { userId },
+      { $set: updateUserData },
+      { returnOriginal: false },
+    );
+
     res.status(200).json('스터디 수정이 완료되었습니다.');
   } catch (err) {
     console.error(err);
