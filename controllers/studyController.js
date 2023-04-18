@@ -411,7 +411,12 @@ const url2 = `/sms/v2/services/${SERVICE_ID}/messages`;
 const TIMESTAMP = Date.now().toString();
 
 const sendSms = async (req, res) => {
-  console.log('req.body.phone??????????', req.body.phone, req.body.studyName);
+  console.log(
+    'req.body.phone??????????',
+    req.body.phone,
+    req.body.studyName,
+    TIMESTAMP,
+  );
   try {
     const hmac = CryptoJS.algo.HMAC.create(
       CryptoJS.algo.SHA256,
@@ -433,7 +438,7 @@ const sendSms = async (req, res) => {
       url,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'x-ncp-apigw-timestamp': `${TIMESTAMP}`,
+        'x-ncp-apigw-timestamp': TIMESTAMP,
         'x-ncp-iam-access-key': `${API_ACCESS_KEY}`,
         'x-ncp-apigw-signature-v2': `${API_GATEWAY_SIGNATURE}`,
       },
