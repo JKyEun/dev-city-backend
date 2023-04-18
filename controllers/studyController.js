@@ -411,7 +411,7 @@ const url2 = `/sms/v2/services/${SERVICE_ID}/messages`;
 const TIMESTAMP = Date.now().toString();
 
 const sendSms = async (req, res) => {
-  console.log('req.body.phone??????????', req.body.phone);
+  console.log('req.body.phone??????????', req.body.phone, req.body.studyName);
   try {
     const hmac = CryptoJS.algo.HMAC.create(
       CryptoJS.algo.SHA256,
@@ -441,7 +441,7 @@ const sendSms = async (req, res) => {
         type: 'SMS',
         countryCode: '82',
         from: '01035414199',
-        content: '[Dev-City] 참가신청이 왔습니다.',
+        content: `[Dev-City] "${req.body.studyName}"에 새로운 참가신청이 도착했습니다`,
         messages: [
           {
             to: `${req.body.phone}`,
