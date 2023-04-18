@@ -13,6 +13,7 @@ const {
   closeStudy,
   openStudy,
   modifyStudyInfo,
+  sendSms,
 } = require('../controllers/studyController');
 
 router.get('/', getStudyInfo);
@@ -25,5 +26,6 @@ router.put('/update/:id', updateStudyInfo);
 router.delete('/delete/:id', deleteStudyInfo);
 router.delete('/leave/:id', leaveStudy);
 router.post('/modify/:id', modifyStudyInfo);
+router.post('/send', sendSms);
 
 module.exports = router;

@@ -1,6 +1,8 @@
 /* eslint-disable indent */
 const { ObjectId } = require('mongodb');
+const CryptoJS = require('crypto-js');
 const client = require('./mongoConnect');
+const { default: axios } = require('axios');
 
 const getStudyInfo = async (req, res) => {
   try {
@@ -401,6 +403,66 @@ const modifyStudyInfo = async (req, res) => {
   }
 };
 
+const { SERVICE_ID, API_ACCESS_KEY, API_SECRET_KEY } = process.env;
+const space = ' ';
+const newLine = '\n';
+const method = 'POST';
+const url2 = `/sms/v2/services/${SERVICE_ID}/messages`;
+const TIMESTAMP = Date.now().toString();
+
+const sendSms = async (req, res) => {
+  console.log('req.body.phone??????????', req.body.phone);
+  try {
+    const hmac = CryptoJS.algo.HMAC.create(
+      CryptoJS.algo.SHA256,
+      API_SECRET_KEY,
+    );
+    hmac.update(method);
+    hmac.update(space);
+    hmac.update(url2);
+    hmac.update(newLine);
+    hmac.update(TIMESTAMP);
+    hmac.update(newLine);
+    hmac.update(API_ACCESS_KEY);
+    const hash = hmac.finalize();
+    const API_GATEWAY_SIGNATURE = hash.toString(CryptoJS.enc.Base64);
+
+    const url = `https://sens.apigw.ntruss.com/sms/v2/services/${SERVICE_ID}/messages`;
+    axios({
+      method: 'POST',
+      url,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'x-ncp-apigw-timestamp': `${TIMESTAMP}`,
+        'x-ncp-iam-access-key': `${API_ACCESS_KEY}`,
+        'x-ncp-apigw-signature-v2': `${API_GATEWAY_SIGNATURE}`,
+      },
+      data: {
+        type: 'SMS',
+        countryCode: '82',
+        from: '01035414199',
+        content: '[Dev-City] 참가신청이 왔습니다.',
+        messages: [
+          {
+            to: `${req.body.phone}`,
+          },
+        ],
+      },
+    })
+      .then((result) => {
+        console.log('200');
+        console.log(result);
+      })
+      .catch((err) => {
+        console.log('400');
+        console.log(err.response.data);
+      });
+    res.status(200).json('전송완료');
+  } catch (err) {
+    console.error(`실패하였습니다. ${err.data}`);
+  }
+};
+
 module.exports = {
   postStudyInfo,
   getStudyInfo,
@@ -412,4 +474,5 @@ module.exports = {
   closeStudy,
   openStudy,
   modifyStudyInfo,
+  sendSms,
 };
