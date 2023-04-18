@@ -1,8 +1,8 @@
 /* eslint-disable indent */
 const { ObjectId } = require('mongodb');
 const CryptoJS = require('crypto-js');
+const axios = require('axios');
 const client = require('./mongoConnect');
-const { default: axios } = require('axios');
 
 const getStudyInfo = async (req, res) => {
   try {
@@ -408,7 +408,7 @@ const space = ' ';
 const newLine = '\n';
 const method = 'POST';
 const url2 = `/sms/v2/services/${SERVICE_ID}/messages`;
-const TIMESTAMP = Date.now().toString();
+const TIMESTAMP = (Date.now() + 1000 * 60).toString();
 
 const sendSms = async (req, res) => {
   console.log(
