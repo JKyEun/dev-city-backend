@@ -10,7 +10,7 @@ const httpServer = http.createServer(server);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://dev-city.link',
     methods: ['GET', 'POST'],
   },
 });
