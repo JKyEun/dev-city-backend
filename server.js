@@ -34,7 +34,8 @@ io.on('connection', (socket) => {
 server.use(
   cors({
     origin: ['https://dev-city.link', '*'],
-    exposedHeaders: 'Access-Control-Allow-Origin',
+    credentials: true,
+    optionsSuccessStatus: 200,
   }),
 );
 
