@@ -10,7 +10,7 @@ const httpServer = http.createServer(server);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ['https://dev-city.link', '*'],
+    origin: 'http://dev-city.link',
     methods: ['GET', 'POST'],
   },
 });
@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 
 server.use(
   cors({
-    origin: ['https://dev-city.link', '*'],
+    origin: 'http://dev-city.link',
     credentials: true,
     optionsSuccessStatus: 200,
   }),
