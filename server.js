@@ -11,7 +11,8 @@ const httpServer = http.createServer(server);
 const io = new Server(httpServer, {
   cors: {
     origin: 'http://dev-city.link',
-    methods: ['GET', 'POST'],
+    credentials: true,
+    optionsSuccessStatus: 200,
   },
 });
 
