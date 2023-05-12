@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 
 server.use(
   cors({
-    origin: 'https://dev-city.link',
+    origin: ['https://dev-city.link', '*'],
   }),
 );
 server.use(express.json({ limit: 5000000 }));
