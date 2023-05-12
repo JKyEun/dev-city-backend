@@ -34,8 +34,10 @@ io.on('connection', (socket) => {
 server.use(
   cors({
     origin: ['https://dev-city.link', '*'],
+    exposedHeaders: 'Access-Control-Allow-Origin',
   }),
 );
+
 server.use(express.json({ limit: 5000000 }));
 server.use(express.urlencoded({ extended: false }));
 
